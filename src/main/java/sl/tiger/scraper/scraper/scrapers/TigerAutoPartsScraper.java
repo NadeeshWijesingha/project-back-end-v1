@@ -1,5 +1,7 @@
 package sl.tiger.scraper.scraper.scrapers;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import sl.tiger.scraper.business.ResultRepository;
 import sl.tiger.scraper.controller.model.ScraperId;
 import sl.tiger.scraper.controller.model.StatusMassages;
 import sl.tiger.scraper.dto.Availability;
@@ -28,6 +30,9 @@ import static sl.tiger.scraper.util.ScrapHelper.getExceptionText;
 
 @Component
 public class TigerAutoPartsScraper extends Scraper {
+
+    @Autowired
+    private ResultRepository resultRepository;
 
     public static final String USERCODE = "892574";
     public static final String PASSWORD = "892574";
@@ -71,6 +76,7 @@ public class TigerAutoPartsScraper extends Scraper {
             }
             webDriver.get(reDirectUrl);
 
+            resultRepository.saveAll(results);
             return results;
 
         } catch (Exception ex) {

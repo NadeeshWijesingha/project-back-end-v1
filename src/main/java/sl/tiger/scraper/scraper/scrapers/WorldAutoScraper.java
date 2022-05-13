@@ -1,11 +1,14 @@
 package sl.tiger.scraper.scraper.scrapers;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import sl.tiger.scraper.business.ResultRepository;
 import sl.tiger.scraper.controller.model.ScraperId;
 import sl.tiger.scraper.controller.model.StatusMassages;
 import sl.tiger.scraper.dto.Availability;
 import sl.tiger.scraper.dto.Criteria;
 import sl.tiger.scraper.dto.LocationAvailability;
 import sl.tiger.scraper.dto.Result;
+import sl.tiger.scraper.entity.ResultEntity;
 import sl.tiger.scraper.exception.CriteriaException;
 import sl.tiger.scraper.scraper.Scraper;
 import sl.tiger.scraper.util.ScrapHelper;
@@ -26,6 +29,9 @@ import static sl.tiger.scraper.util.ScrapHelper.getExceptionText;
 
 @Component
 public class WorldAutoScraper extends Scraper {
+
+    @Autowired
+    private ResultRepository resultRepository;
 
     public static final String USERNAME = "WAW22295";
     public static final String PASSWORD = "MY4UT0P!";
@@ -59,6 +65,7 @@ public class WorldAutoScraper extends Scraper {
             setResults(results, criteria);
 
             pageReset();
+            resultRepository.saveAll(results);
             return results;
 
         } catch (Exception ex) {

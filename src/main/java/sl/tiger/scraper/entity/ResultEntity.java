@@ -1,27 +1,24 @@
-package sl.tiger.scraper.dto;
+package sl.tiger.scraper.entity;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import sl.tiger.scraper.dto.Availability;
 
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @Document
-public class Result {
+public class ResultEntity {
     @Id
-    private String id;
+    private String resultId;
     private String partNumber;
     private String title;
     private String description;
     private String listPrice;
     private String yourPrice;
     private String corePrice;
-    private String EhcPrice;
+    private String ehcPrice;
     private String extend;
     private String imageUrl;
     private String manufacturer;
@@ -32,14 +29,17 @@ public class Result {
     private String applicationNotes;
     private Availability availability;
 
-    public Result(String partNumber, String title, String description, String listPrice, String yourPrice, String corePrice, String ehcPrice, String extend, String imageUrl, String manufacturer, String itemLocation, String productLine, String position, String attributes, String applicationNotes, Availability availability) {
+    public ResultEntity(String partNumber, String title, String description, String listPrice,
+                        String yourPrice, String corePrice, String ehcPrice, String extend,
+                        String imageUrl, String manufacturer, String itemLocation, String productLine,
+                        String position, String attributes, String applicationNotes, Availability availability) {
         this.partNumber = partNumber;
         this.title = title;
         this.description = description;
         this.listPrice = listPrice;
         this.yourPrice = yourPrice;
         this.corePrice = corePrice;
-        EhcPrice = ehcPrice;
+        this.ehcPrice = ehcPrice;
         this.extend = extend;
         this.imageUrl = imageUrl;
         this.manufacturer = manufacturer;
