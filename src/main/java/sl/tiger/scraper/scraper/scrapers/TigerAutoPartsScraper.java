@@ -1,6 +1,7 @@
 package sl.tiger.scraper.scraper.scrapers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import sl.tiger.scraper.business.CriteriaRepository;
 import sl.tiger.scraper.business.ResultRepository;
 import sl.tiger.scraper.controller.model.ScraperId;
 import sl.tiger.scraper.controller.model.StatusMassages;
@@ -19,6 +20,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -33,6 +36,8 @@ public class TigerAutoPartsScraper extends Scraper {
 
     @Autowired
     private ResultRepository resultRepository;
+    @Autowired
+    private CriteriaRepository criteriaRepository;
 
     public static final String USERCODE = "892574";
     public static final String PASSWORD = "892574";
@@ -47,6 +52,7 @@ public class TigerAutoPartsScraper extends Scraper {
     @Override
     public List<Result> search(Criteria criteria) throws CriteriaException {
         try {
+
             login();
             logger.info(StatusMassages.LOGIN_SUCCESS.status);
 
@@ -76,6 +82,9 @@ public class TigerAutoPartsScraper extends Scraper {
             }
             webDriver.get(reDirectUrl);
 
+            criteria.setDate(LocalDate.now());
+
+            criteriaRepository.save(criteria);
             resultRepository.saveAll(results);
             return results;
 
@@ -203,7 +212,7 @@ public class TigerAutoPartsScraper extends Scraper {
     }
 
     private void selectShop() {
-        WebElement shop = webDriver.findElement(By.className("first"));
+        WebElement shop = webDriver.findElements(By.className("first")).get(1);
         shop.click();
     }
 
