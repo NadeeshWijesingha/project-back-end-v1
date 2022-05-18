@@ -233,7 +233,7 @@ public class AltromScraper extends Scraper {
             WebElement mainTable = webDriver.findElement(By.id("modelTable"));
             List<WebElement> cells = mainTable.findElements(By.tagName("a"));
 
-            String[] criteriaSplit = criteria.getModel().trim().split("-");
+            String[] criteriaSplit = criteria.getModel().trim().split(" ");
             String criteriaModel = criteriaSplit[0];
 
             List<WebElement> collect = cells.stream()

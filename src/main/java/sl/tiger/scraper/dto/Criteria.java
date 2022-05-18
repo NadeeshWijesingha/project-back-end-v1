@@ -1,7 +1,11 @@
 package sl.tiger.scraper.dto;
 
 import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 
 @AllArgsConstructor
@@ -10,7 +14,10 @@ import java.util.Arrays;
 @Setter
 @ToString
 @Builder
+@Document
 public class Criteria {
+    @Id
+    private String criteriaId;
     private SearchType searchType;
 
     private String text;
@@ -26,6 +33,7 @@ public class Criteria {
     private String partNumber;
     private boolean addToCart;
     private boolean withAvailability;
+    private LocalDate date;
     private int maxResultCount;
     public String[] getCategoryNames() {
         return Arrays.stream(categories).map(CriteriaCategory::getCategory).toArray(String[]::new);

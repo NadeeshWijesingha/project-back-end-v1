@@ -193,13 +193,7 @@ public class ScrapHelper {
     private static void selectAllEngineOrZeroth(List<WebElement> cells) {
         boolean isEngineFound = false;
 
-        for (WebElement webElement : cells) {
-            if (ScrapHelper.isContainsWithTrim(webElement.getText(), "All Engine")) {
-                webElement.click();
-                isEngineFound = true;
-                break;
-            }
-        }
+        cells.get(1).click();
 
         if (!isEngineFound) {
             cells.get(0).click();

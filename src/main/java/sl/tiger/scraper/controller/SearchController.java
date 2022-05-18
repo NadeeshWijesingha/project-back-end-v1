@@ -41,7 +41,7 @@ public class SearchController {
 
         Criteria criteria = new Criteria();
 
-        String[] scrappers = {ScraperId.MY_PLACE_FOR_PARTS.id};
+        String[] scrappers = {ScraperId.TIGER_AUTO_PARTS.id, ScraperId.KEYSTONE_AUTOMOTIVE.id, ScraperId.ALTROM.id, ScraperId.WORLD_AUTO.id};
         criteria.setScrappers(scrappers);
 
         criteria.setText(text);
