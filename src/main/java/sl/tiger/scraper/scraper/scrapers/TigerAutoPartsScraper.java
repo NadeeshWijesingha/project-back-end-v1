@@ -82,7 +82,7 @@ public class TigerAutoPartsScraper extends Scraper {
             }
             webDriver.get(reDirectUrl);
 
-            criteria.setDate(LocalDate.now());
+            criteria.setDate(LocalDateTime.now());
 
             criteriaRepository.save(criteria);
             resultRepository.saveAll(results);
@@ -153,6 +153,11 @@ public class TigerAutoPartsScraper extends Scraper {
             }
 
             webDriver.get(reDirectUrl);
+
+            criteria.setDate(LocalDateTime.now());
+
+            criteriaRepository.save(criteria);
+            resultRepository.saveAll(results);
 
             return results;
         } catch (Exception ex) {
@@ -327,6 +332,8 @@ public class TigerAutoPartsScraper extends Scraper {
                 } else {
                     result.setImageUrl(rowsColumns.get(0).findElements(By.tagName("a")).get(1).getAttribute("href"));
                 }
+                result.setDateTime(LocalDateTime.now());
+                result.setSiteName(ScraperId.TIGER_AUTO_PARTS.id);
                 result.setPartNumber(rowsColumns.get(1).getText());
                 result.setTitle(rowsColumns.get(2).getText());
                 result.setListPrice(rowsColumns.get(3).getText());

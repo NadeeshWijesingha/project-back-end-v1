@@ -1,6 +1,7 @@
 package sl.tiger.scraper.scraper.scrapers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import sl.tiger.scraper.business.CriteriaRepository;
 import sl.tiger.scraper.business.ResultRepository;
 import sl.tiger.scraper.controller.model.ScraperId;
 import sl.tiger.scraper.controller.model.StatusMassages;
@@ -21,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,6 +34,8 @@ public class WorldAutoScraper extends Scraper {
 
     @Autowired
     private ResultRepository resultRepository;
+    @Autowired
+    private CriteriaRepository criteriaRepository;
 
     public static final String USERNAME = "WAW22295";
     public static final String PASSWORD = "MY4UT0P!";
@@ -65,6 +69,10 @@ public class WorldAutoScraper extends Scraper {
             setResults(results, criteria);
 
             pageReset();
+
+            criteria.setDate(LocalDateTime.now());
+
+            criteriaRepository.save(criteria);
             resultRepository.saveAll(results);
             return results;
 
@@ -144,6 +152,11 @@ public class WorldAutoScraper extends Scraper {
             }
 
             pageReset();
+
+            criteria.setDate(LocalDateTime.now());
+
+            criteriaRepository.save(criteria);
+            resultRepository.saveAll(results);
 
             return results;
         } catch (Exception ex) {
@@ -320,6 +333,8 @@ public class WorldAutoScraper extends Scraper {
                 WebElement mainTr = webElement.findElements(By.tagName("tr")).get(0);
                 List<WebElement> rowsColumns = mainTr.findElements(By.tagName("td"));
 
+                result.setDateTime(LocalDateTime.now());
+                result.setSiteName(ScraperId.WORLD_AUTO.id);
                 result.setPartNumber(rowsColumns.get(3).findElements(By.tagName("span")).get(1).getText());
                 result.setDescription(rowsColumns.get(2).getText());
                 if (criteria.isWithAvailability()) {

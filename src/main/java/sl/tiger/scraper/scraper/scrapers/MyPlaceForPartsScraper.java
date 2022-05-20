@@ -4,7 +4,10 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import sl.tiger.scraper.business.CriteriaRepository;
+import sl.tiger.scraper.business.ResultRepository;
 import sl.tiger.scraper.controller.model.ScraperId;
 import sl.tiger.scraper.controller.model.StatusMassages;
 import sl.tiger.scraper.dto.Availability;
@@ -16,6 +19,7 @@ import sl.tiger.scraper.scraper.Scraper;
 import sl.tiger.scraper.util.ScrapHelper;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +30,11 @@ import java.util.stream.Collectors;
 
 @Component
 public class MyPlaceForPartsScraper extends Scraper {
+
+    @Autowired
+    private ResultRepository resultRepository;
+    @Autowired
+    private CriteriaRepository criteriaRepository;
 
     // TODO read from config
     public static final String USERNAME = "vo91972";
@@ -85,6 +94,10 @@ public class MyPlaceForPartsScraper extends Scraper {
             wait.until(ExpectedConditions.elementToBeClickable(By.id("vehNavNewLookup")));
             webDriver.findElement(By.id("vehNavNewLookup")).click();
 
+            criteria.setDate(LocalDateTime.now());
+
+            criteriaRepository.save(criteria);
+            resultRepository.saveAll(results);
             return results;
         } catch (Exception ex) {
 
@@ -170,6 +183,11 @@ public class MyPlaceForPartsScraper extends Scraper {
             } else {
                 resetSearch();
             }
+
+            criteria.setDate(LocalDateTime.now());
+
+            criteriaRepository.save(criteria);
+            resultRepository.saveAll(results);
             return results;
         } catch (Exception ex) {
             logger.error("MyPlace4Parts Scraper Part Nu Search : \n", ex);
@@ -450,6 +468,8 @@ public class MyPlaceForPartsScraper extends Scraper {
                 if (!partData.isEmpty()) {
                     result.setDescription(partData.get(0).getText());
                 }
+                result.setDateTime(LocalDateTime.now());
+                result.setSiteName(ScraperId.MY_PLACE_FOR_PARTS.id);
                 result.setPartNumber(rowsColumns.get(2).findElement(By.className("part_num_wdith")).getText());
                 result.setAvailability(getAvailability(webElement));
                 result.setYourPrice(rowsColumns.get(4).findElement(By.tagName("label")).getText());

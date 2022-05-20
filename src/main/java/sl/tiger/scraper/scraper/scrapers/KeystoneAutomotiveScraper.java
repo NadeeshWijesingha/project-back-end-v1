@@ -1,6 +1,7 @@
 package sl.tiger.scraper.scraper.scrapers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import sl.tiger.scraper.business.CriteriaRepository;
 import sl.tiger.scraper.business.ResultRepository;
 import sl.tiger.scraper.controller.model.ScraperId;
 import sl.tiger.scraper.controller.model.StatusMassages;
@@ -16,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -27,6 +29,8 @@ public class KeystoneAutomotiveScraper extends Scraper {
 
     @Autowired
     private ResultRepository resultRepository;
+    @Autowired
+    private CriteriaRepository criteriaRepository;
 
     public static final String USERCODE = "160.719";
     public static final String PASSWORD = "Myauto#1080";
@@ -54,6 +58,9 @@ public class KeystoneAutomotiveScraper extends Scraper {
             clickReset();
             webDriver.navigate().refresh();
 
+            criteria.setDate(LocalDateTime.now());
+
+            criteriaRepository.save(criteria);
             resultRepository.saveAll(results);
 
             return results;
@@ -116,6 +123,11 @@ public class KeystoneAutomotiveScraper extends Scraper {
 
             partNuSearchReset();
             webDriver.navigate().refresh();
+
+            criteria.setDate(LocalDateTime.now());
+
+            criteriaRepository.save(criteria);
+            resultRepository.saveAll(results);
 
             return results;
 
@@ -318,6 +330,8 @@ public class KeystoneAutomotiveScraper extends Scraper {
 
         WebElement searchedResult = item.findElements(By.className("app-container-item")).get(0);
         try {
+            result.setDateTime(LocalDateTime.now());
+            result.setSiteName(ScraperId.KEYSTONE_AUTOMOTIVE.id);
             result.setPartNumber(searchedResult.findElement(By.className("lkq-link")).findElement(By.tagName("a")).getText());
             result.setImageUrl(searchedResult.findElement(By.className("flex-image")).findElement(By.tagName("img")).getAttribute("src"));
             result.setTitle(searchedResult.findElement(By.className("product-title")).getText());
@@ -390,6 +404,8 @@ public class KeystoneAutomotiveScraper extends Scraper {
 
 
                 WebElement image = webElement.findElement(By.className("flex-image"));
+                result.setDateTime(LocalDateTime.now());
+                result.setSiteName(ScraperId.KEYSTONE_AUTOMOTIVE.id);
                 result.setImageUrl(image.findElement(By.tagName("img")).getAttribute("src"));
                 result.setTitle(productName.getText());
                 result.setDescription(productDesc.getText());
