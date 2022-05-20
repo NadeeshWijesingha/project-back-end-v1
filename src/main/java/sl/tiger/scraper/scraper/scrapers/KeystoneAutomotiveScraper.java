@@ -59,6 +59,7 @@ public class KeystoneAutomotiveScraper extends Scraper {
             webDriver.navigate().refresh();
 
             criteria.setDate(LocalDateTime.now());
+            criteria.setSiteName(ScraperId.KEYSTONE_AUTOMOTIVE.id);
 
             criteriaRepository.save(criteria);
             resultRepository.saveAll(results);
@@ -125,6 +126,7 @@ public class KeystoneAutomotiveScraper extends Scraper {
             webDriver.navigate().refresh();
 
             criteria.setDate(LocalDateTime.now());
+            criteria.setSiteName(ScraperId.KEYSTONE_AUTOMOTIVE.id);
 
             criteriaRepository.save(criteria);
             resultRepository.saveAll(results);

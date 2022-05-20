@@ -128,23 +128,6 @@ public class ScrapHelper {
         };
     }
 
-    public static String generateName(String fileName, Criteria criteria) {
-
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime now = LocalDateTime.now();
-
-        DateTimeFormatter nameDTF = DateTimeFormatter.ofPattern("yyyy-MM-dd - HH.mm.ss");
-
-        String myPath = "../images/" + dtf.format(now) + "/";
-
-        String output = myPath + fileName + " - " + criteria.screenshotName() + " - " + "[" + nameDTF.format(now) + "]" + ".jpeg";
-
-        logger.info(criteria.toString());
-
-        return output;
-
-    }
-
     public static String getModelTrimString(Criteria criteria, String modelElement, String splitRegex, String spaceOrUnderscore) {
         String model = criteria.getModel();
 

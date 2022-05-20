@@ -71,6 +71,7 @@ public class WorldAutoScraper extends Scraper {
             pageReset();
 
             criteria.setDate(LocalDateTime.now());
+            criteria.setSiteName(ScraperId.WORLD_AUTO.id);
 
             criteriaRepository.save(criteria);
             resultRepository.saveAll(results);
@@ -154,6 +155,7 @@ public class WorldAutoScraper extends Scraper {
             pageReset();
 
             criteria.setDate(LocalDateTime.now());
+            criteria.setSiteName(ScraperId.WORLD_AUTO.id);
 
             criteriaRepository.save(criteria);
             resultRepository.saveAll(results);

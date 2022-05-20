@@ -95,6 +95,7 @@ public class MyPlaceForPartsScraper extends Scraper {
             webDriver.findElement(By.id("vehNavNewLookup")).click();
 
             criteria.setDate(LocalDateTime.now());
+            criteria.setSiteName(ScraperId.MY_PLACE_FOR_PARTS.id);
 
             criteriaRepository.save(criteria);
             resultRepository.saveAll(results);
@@ -185,6 +186,7 @@ public class MyPlaceForPartsScraper extends Scraper {
             }
 
             criteria.setDate(LocalDateTime.now());
+            criteria.setSiteName(ScraperId.MY_PLACE_FOR_PARTS.id);
 
             criteriaRepository.save(criteria);
             resultRepository.saveAll(results);

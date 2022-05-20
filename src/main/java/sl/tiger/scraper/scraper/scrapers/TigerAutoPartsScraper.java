@@ -83,6 +83,7 @@ public class TigerAutoPartsScraper extends Scraper {
             webDriver.get(reDirectUrl);
 
             criteria.setDate(LocalDateTime.now());
+            criteria.setSiteName(ScraperId.TIGER_AUTO_PARTS.id);
 
             criteriaRepository.save(criteria);
             resultRepository.saveAll(results);
@@ -155,6 +156,7 @@ public class TigerAutoPartsScraper extends Scraper {
             webDriver.get(reDirectUrl);
 
             criteria.setDate(LocalDateTime.now());
+            criteria.setSiteName(ScraperId.TIGER_AUTO_PARTS.id);
 
             criteriaRepository.save(criteria);
             resultRepository.saveAll(results);

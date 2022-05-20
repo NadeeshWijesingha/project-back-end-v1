@@ -19,7 +19,7 @@ public class Criteria {
     @Id
     private String criteriaId;
     private SearchType searchType;
-
+    private String siteName;
     private String text;
     private String[] scrappers;
     private String year;
@@ -41,10 +41,6 @@ public class Criteria {
 
     public enum SearchType{
         PART_NUMBER, ADVANCE;
-    }
-
-    public String screenshotName() {
-        return "[year-" + year + "] [make-" + make + "] [model-" + model + "] [category-" + Arrays.toString(categories) + "] [engine-" + engine + "]";
     }
 }
 
