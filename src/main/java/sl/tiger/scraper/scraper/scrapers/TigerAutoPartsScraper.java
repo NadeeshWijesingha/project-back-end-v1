@@ -133,7 +133,7 @@ public class TigerAutoPartsScraper extends Scraper {
                 WebElement element = webDriver.findElement(By.id("res-wrap"));
                 WebElement tr = element.findElements(By.tagName("tr")).get(2);
                 WebElement td = tr.findElements(By.tagName("td")).get(5);
-                WebElement button = td.findElements(By.tagName("input")).get(1);
+                WebElement button = td.findElement(By.tagName("a"));
                 button.click();
 
                 try {
@@ -143,16 +143,33 @@ public class TigerAutoPartsScraper extends Scraper {
                     Thread.currentThread().interrupt();
                 }
 
+                wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("pop-"+partNumber.toUpperCase())));
+                WebElement element1 = webDriver.findElement(By.id("pop-" + partNumber.toUpperCase()));
+                element1.findElements(By.tagName("input")).get(1).click();
+
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    logger.error(e.getMessage());
+                    Thread.currentThread().interrupt();
+                }
+
                 WebElement itemsmycart = webDriver.findElement(By.id("itemsincartlink"));
                 itemsmycart.click();
 
                 wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("tabs")));
+                WebElement tabs = webDriver.findElement(By.id("tabs"));
+                tabs.findElements(By.tagName("li")).forEach(webElement -> {
+                    if (webElement.getText().trim().contains("1")) {
+                        webElement.findElement(By.tagName("a")).click();
+                    }
+                });
 
-                WebElement element1 = webDriver.findElement(By.id("frm-scarb"));
-                WebElement element2 = element1.findElement(By.className("div-quote"));
-                element2.findElement(By.className("newquote")).click();
+                wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("frm-bramp")));
+                WebElement element2 = webDriver.findElement(By.id("frm-bramp"));
+                element2.findElement(By.name("newquote")).click();
 
-                selectShop();
+                wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("frm-to-cart")));
 
                 logger.info(StatusMassages.ADD_TO_CART_SUCCESS.status);
             } else {
