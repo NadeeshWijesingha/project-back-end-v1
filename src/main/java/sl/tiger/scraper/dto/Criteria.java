@@ -33,7 +33,7 @@ public class Criteria {
     private String partNumber;
     private boolean addToCart;
     private boolean withAvailability;
-    private LocalDateTime date;
+    private String date;
     private int maxResultCount;
     public String[] getCategoryNames() {
         return Arrays.stream(categories).map(CriteriaCategory::getCategory).toArray(String[]::new);

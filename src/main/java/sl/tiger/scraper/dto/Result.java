@@ -7,6 +7,7 @@ import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
@@ -32,14 +33,14 @@ public class Result {
     private String position;
     private String attributes;
     private String applicationNotes;
-    private LocalDateTime dateTime;
+    private String date;
     private String siteName;
     private Availability availability;
 
     public Result(String partNumber, String title, String description, String listPrice,
                   String yourPrice, String corePrice, String ehcPrice, String extend,
                   String imageUrl, String manufacturer, String itemLocation, String productLine,
-                  String position, String attributes, String applicationNotes, LocalDateTime dateTime,
+                  String position, String attributes, String applicationNotes, String date,
                   String siteName, Availability availability) {
         this.partNumber = partNumber;
         this.title = title;
@@ -56,7 +57,7 @@ public class Result {
         this.position = position;
         this.attributes = attributes;
         this.applicationNotes = applicationNotes;
-        this.dateTime = dateTime;
+        this.date = date;
         this.siteName = siteName;
         this.availability = availability;
     }

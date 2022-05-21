@@ -1,6 +1,14 @@
 package sl.tiger.scraper.scraper.scrapers;
 
+import org.openqa.selenium.By;
+import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.Select;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import sl.tiger.scraper.business.CriteriaRepository;
 import sl.tiger.scraper.business.PartNumberCriteriaRepository;
 import sl.tiger.scraper.business.ResultRepository;
@@ -13,17 +21,8 @@ import sl.tiger.scraper.dto.Result;
 import sl.tiger.scraper.exception.CriteriaException;
 import sl.tiger.scraper.scraper.Scraper;
 import sl.tiger.scraper.util.ScrapHelper;
-import org.openqa.selenium.By;
-import org.openqa.selenium.NoSuchElementException;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.Select;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -31,22 +30,19 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static sl.tiger.scraper.util.ScrapHelper.getExceptionText;
-
 @Component
 public class TigerAutoPartsScraper extends Scraper {
 
+    public static final String USERCODE = "892574";
+    public static final String PASSWORD = "892574";
+    static String reDirectUrl = "https://scarborough.tigeronlineorder.com/admin/partslist2.php";
+    Logger logger = LoggerFactory.getLogger(TigerAutoPartsScraper.class);
     @Autowired
     private ResultRepository resultRepository;
     @Autowired
     private CriteriaRepository criteriaRepository;
     @Autowired
     private PartNumberCriteriaRepository partNumberCriteriaRepository;
-
-    public static final String USERCODE = "892574";
-    public static final String PASSWORD = "892574";
-    static String reDirectUrl = "https://scarborough.tigeronlineorder.com/admin/partslist2.php";
-    Logger logger = LoggerFactory.getLogger(TigerAutoPartsScraper.class);
     private boolean isLoggedIn = false;
 
     public TigerAutoPartsScraper() {
@@ -86,7 +82,7 @@ public class TigerAutoPartsScraper extends Scraper {
             }
             webDriver.get(reDirectUrl);
 
-            criteria.setDate(LocalDateTime.now());
+            criteria.setDate(LocalDate.now().toString());
             criteria.setSiteName(ScraperId.TIGER_AUTO_PARTS.id);
 
             criteriaRepository.save(criteria);
@@ -143,7 +139,7 @@ public class TigerAutoPartsScraper extends Scraper {
                     Thread.currentThread().interrupt();
                 }
 
-                wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("pop-"+partNumber.toUpperCase())));
+                wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("pop-" + partNumber.toUpperCase())));
                 WebElement element1 = webDriver.findElement(By.id("pop-" + partNumber.toUpperCase()));
                 element1.findElements(By.tagName("input")).get(1).click();
 
@@ -362,7 +358,7 @@ public class TigerAutoPartsScraper extends Scraper {
                 } else {
                     result.setImageUrl(rowsColumns.get(0).findElements(By.tagName("a")).get(1).getAttribute("href"));
                 }
-                result.setDateTime(LocalDateTime.now());
+                result.setDate(LocalDate.now().toString());
                 result.setSiteName(ScraperId.TIGER_AUTO_PARTS.id);
                 result.setPartNumber(rowsColumns.get(1).getText());
                 result.setTitle(rowsColumns.get(2).getText());
@@ -416,7 +412,7 @@ public class TigerAutoPartsScraper extends Scraper {
                 } else {
                     result.setImageUrl(rowsColumns.get(0).findElements(By.tagName("a")).get(1).getAttribute("href"));
                 }
-                result.setDateTime(LocalDateTime.now());
+                result.setDate(LocalDate.now().toString());
                 result.setSiteName(ScraperId.TIGER_AUTO_PARTS.id);
                 result.setPartNumber(rowsColumns.get(1).getText());
                 result.setTitle(rowsColumns.get(2).getText());

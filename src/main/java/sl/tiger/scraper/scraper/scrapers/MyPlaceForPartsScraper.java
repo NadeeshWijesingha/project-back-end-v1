@@ -16,30 +16,27 @@ import sl.tiger.scraper.exception.CriteriaException;
 import sl.tiger.scraper.scraper.Scraper;
 import sl.tiger.scraper.util.ScrapHelper;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 
 @Component
 public class MyPlaceForPartsScraper extends Scraper {
 
+    // TODO read from config
+    public static final String USERNAME = "vo91972";
+    public static final String PASSWORD = "GMIHDJQU";
+    Logger logger = LoggerFactory.getLogger(MyPlaceForPartsScraper.class);
     @Autowired
     private ResultRepository resultRepository;
     @Autowired
     private CriteriaRepository criteriaRepository;
     @Autowired
     private PartNumberCriteriaRepository partNumberCriteriaRepository;
-
-    // TODO read from config
-    public static final String USERNAME = "vo91972";
-    public static final String PASSWORD = "GMIHDJQU";
-    Logger logger = LoggerFactory.getLogger(MyPlaceForPartsScraper.class);
     private boolean isLoggedIn = false;
     private boolean isPassMiddleScreen = false;
 
@@ -94,7 +91,7 @@ public class MyPlaceForPartsScraper extends Scraper {
             wait.until(ExpectedConditions.elementToBeClickable(By.id("vehNavNewLookup")));
             webDriver.findElement(By.id("vehNavNewLookup")).click();
 
-            criteria.setDate(LocalDateTime.now());
+            criteria.setDate(LocalDate.now().toString());
             criteria.setSiteName(ScraperId.MY_PLACE_FOR_PARTS.id);
 
             criteriaRepository.save(criteria);
@@ -488,7 +485,7 @@ public class MyPlaceForPartsScraper extends Scraper {
                 if (!partData.isEmpty()) {
                     result.setDescription(partData.get(0).getText());
                 }
-                result.setDateTime(LocalDateTime.now());
+                result.setDate(LocalDate.now().toString());
                 result.setSiteName(ScraperId.MY_PLACE_FOR_PARTS.id);
                 result.setPartNumber(rowsColumns.get(2).findElement(By.className("part_num_wdith")).getText());
                 result.setAvailability(getAvailability(webElement));
