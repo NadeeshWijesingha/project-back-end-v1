@@ -138,9 +138,21 @@ public class MyPlaceForPartsScraper extends Scraper {
             }
 
             if (addToCart) {
-                webDriver.findElement(By.id("_mpp_parts_display_WAR_mpp_parts_displayportlet_INSTANCE_6Xnw_2_0_addImage")).click();
+                webDriver.findElement(By.id("add2cart_2_0")).click();
+
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    logger.error(e.getMessage());
+                }
 
                 webDriver.findElement(By.className("gr_button")).click();
+
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    logger.error(e.getMessage());
+                }
 
                 wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("gr_save_button")));
 
@@ -157,7 +169,9 @@ public class MyPlaceForPartsScraper extends Scraper {
 
                 resetSearch();
 
-                try {
+                logger.info(StatusMassages.ADD_TO_CART_SUCCESS.status);
+
+                /*try {
                     wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("newLookUpbuttonDiv")));
                     WebElement newLookUpbuttonDiv = webDriver.findElement((By.id("newLookUpbuttonDiv")));
                     //Continue Shopping
@@ -170,7 +184,7 @@ public class MyPlaceForPartsScraper extends Scraper {
                     }
                 } catch (TimeoutException ex) {
                     logger.error(ex.getMessage(), ex);
-                }
+                }*/
 
             } else {
                 resetSearch();
