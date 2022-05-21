@@ -2,6 +2,7 @@ package sl.tiger.scraper.scraper;
 
 import sl.tiger.scraper.controller.model.StatusMassages;
 import sl.tiger.scraper.dto.Criteria;
+import sl.tiger.scraper.dto.PartNumberCriteria;
 import sl.tiger.scraper.dto.Result;
 import sl.tiger.scraper.exception.CriteriaException;
 import org.slf4j.Logger;
@@ -43,7 +44,7 @@ public class ScrapHandler {
 
     }
 
-    public List<Result> searchByPartNumber(Criteria criteria) throws CriteriaException {
+    public List<Result> searchByPartNumber(PartNumberCriteria criteria) throws CriteriaException {
 
         List<Result> results = new ArrayList<>();
         String[] scraperIds = criteria.getScrappers();
@@ -55,7 +56,9 @@ public class ScrapHandler {
             Scraper scraper = borrowScraper(scraperId);
             scraper.connect();
             try {
-                results.addAll(scraper.searchByPartNumber(criteria.getPartNumber(), criteria.isAddToCart(), criteria));
+                results.addAll(scraper.searchByPartNumber(criteria.getSite(),
+                        criteria.getPartNumber(), criteria.getAddToCart(), criteria.getCustomerName(),
+                        criteria.getCustomerContactNumber(), criteria));
                 returnScraper(scraper);
             } catch (Exception ex) {
                 logger.error(ex.getMessage(), ex);

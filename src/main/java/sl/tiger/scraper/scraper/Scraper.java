@@ -1,6 +1,7 @@
 package sl.tiger.scraper.scraper;
 
 import sl.tiger.scraper.dto.Criteria;
+import sl.tiger.scraper.dto.PartNumberCriteria;
 import sl.tiger.scraper.dto.Result;
 import sl.tiger.scraper.exception.CriteriaException;
 import org.openqa.selenium.WebDriver;
@@ -86,7 +87,9 @@ public abstract class Scraper {
 
     public abstract List<Result> search(Criteria criteria) throws CriteriaException;
 
-    public abstract List<Result> searchByPartNumber(String partNumber, boolean isAddToCart, Criteria criteria) throws CriteriaException;
+    public abstract List<Result> searchByPartNumber(String site, String partNumber,
+                                                    boolean addToCart, String customerName,
+                                                    String customerContact,  PartNumberCriteria criteria) throws CriteriaException;
 
 
     @PostConstruct

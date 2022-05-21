@@ -3,10 +3,8 @@ package sl.tiger.scraper.controller;
 import br.com.fluentvalidator.context.Error;
 import br.com.fluentvalidator.context.ValidationResult;
 import sl.tiger.scraper.controller.model.ScraperId;
-import sl.tiger.scraper.dto.Criteria;
-import sl.tiger.scraper.dto.CriteriaCategory;
+import sl.tiger.scraper.dto.*;
 import sl.tiger.scraper.dto.ResponseStatus;
-import sl.tiger.scraper.dto.ResponseWrapper;
 import sl.tiger.scraper.dto.search.advance.AdvanceSearchRequestMapper;
 import sl.tiger.scraper.dto.search.advance.GetPartDetailsByAdvanceSearchRequest;
 import sl.tiger.scraper.dto.search.advance.GetPartDetailsByAdvanceSearchRequestValidator;
@@ -100,7 +98,7 @@ public class SearchController {
         }
 
         //map request to search criteria
-        Criteria searchCriteria = PartNumberRequestMapper.getSearchCriteria(request);
+        PartNumberCriteria searchCriteria = PartNumberRequestMapper.getSearchCriteria(request);
 
         //perform search and return results
         try {

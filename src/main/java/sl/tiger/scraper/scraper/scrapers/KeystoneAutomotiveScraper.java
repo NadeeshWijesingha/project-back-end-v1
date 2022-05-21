@@ -2,11 +2,13 @@ package sl.tiger.scraper.scraper.scrapers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import sl.tiger.scraper.business.CriteriaRepository;
+import sl.tiger.scraper.business.PartNumberCriteriaRepository;
 import sl.tiger.scraper.business.ResultRepository;
 import sl.tiger.scraper.controller.model.ScraperId;
 import sl.tiger.scraper.controller.model.StatusMassages;
 import sl.tiger.scraper.dto.Availability;
 import sl.tiger.scraper.dto.Criteria;
+import sl.tiger.scraper.dto.PartNumberCriteria;
 import sl.tiger.scraper.dto.Result;
 import sl.tiger.scraper.exception.CriteriaException;
 import sl.tiger.scraper.scraper.Scraper;
@@ -29,6 +31,8 @@ public class KeystoneAutomotiveScraper extends Scraper {
 
     @Autowired
     private ResultRepository resultRepository;
+    @Autowired
+    private PartNumberCriteriaRepository partNumberCriteriaRepository;
     @Autowired
     private CriteriaRepository criteriaRepository;
 
@@ -79,7 +83,9 @@ public class KeystoneAutomotiveScraper extends Scraper {
     }
 
     @Override
-    public List<Result> searchByPartNumber(String partNumber, boolean isAddToCart, Criteria criteria) throws CriteriaException {
+    public List<Result> searchByPartNumber(String site, String partNumber,
+                                           boolean addToCart, String customerName,
+                                           String customerContact, PartNumberCriteria criteria) throws CriteriaException {
         try {
             login();
             logger.info(StatusMassages.LOGIN_SUCCESS.status);
@@ -104,10 +110,10 @@ public class KeystoneAutomotiveScraper extends Scraper {
                 partNuSearchReset();
                 throw new CriteriaException(StatusMassages.PART_NOT_AVAILABLE.status);
             } else {
-                setResult(results, criteria);
+                setPartNumberResult(results, criteria);
             }
 
-            if (isAddToCart) {
+            if (addToCart) {
                 WebElement items = itemContainer.findElement(By.id("search-results-container"));
                 WebElement item = items.findElement(By.className("flex-card-item"));
 
@@ -125,10 +131,14 @@ public class KeystoneAutomotiveScraper extends Scraper {
             partNuSearchReset();
             webDriver.navigate().refresh();
 
-            criteria.setDate(LocalDateTime.now());
-            criteria.setSiteName(ScraperId.KEYSTONE_AUTOMOTIVE.id);
-
-            criteriaRepository.save(criteria);
+            if (addToCart) {
+                criteria.setSite(ScraperId.ALTROM.id);
+                criteria.setCustomerName(customerName);
+                criteria.setCustomerContactNumber(customerContact);
+                criteria.setPartNumber(partNumber);
+                criteria.setAddToCart(addToCart);
+                partNumberCriteriaRepository.save(criteria);
+            }
             resultRepository.saveAll(results);
 
             return results;
@@ -417,6 +427,62 @@ public class KeystoneAutomotiveScraper extends Scraper {
                 if (criteria.isWithAvailability()) {
                     result.setAvailability(getAvailability(webElement));
                 }
+            } catch (NoSuchElementException | StaleElementReferenceException e) {
+                logger.error(e.getMessage(), e);
+            }
+            results.add(result);
+            count++;
+        }
+        logger.info(StatusMassages.SET_RESULT_SUCCESS.status);
+    }
+
+    public void setPartNumberResult(List<Result> results, PartNumberCriteria criteria) {
+
+        if (criteria.getMaxResultCount() != 0) {
+            MAX_RESULT_COUNT = criteria.getMaxResultCount();
+        }
+
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("/html/body/app-root/app-nav-bar/div/div[3]/div[3]/app-aisle/div[2]/div/div/app-product-card[1]")));
+
+        WebElement mainForm = webDriver.findElement(By.id("main-content-area"));
+        WebElement itemContainer = mainForm.findElement(By.className("app-container-item"));
+        WebElement items = itemContainer.findElement(By.id("search-results-container"));
+        WebElement item = items.findElement(By.className("flex-card-item"));
+
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("app-container-item")));
+        List<WebElement> products = item.findElements(By.className("app-container-item"));
+
+        int count = 1;
+
+        for (WebElement webElement: products) {
+            if (count > MAX_RESULT_COUNT)
+                break;
+            Result result = new Result();
+            try {
+
+                WebElement productInfo = webElement.findElement(By.className("product-info"));
+                WebElement productName = productInfo.findElement(By.className("product-title"));
+                WebElement productDesc = productInfo.findElement(By.className("part-description"));
+
+                WebElement partNus = productInfo.findElement(By.className("lkq-link"));
+                WebElement partNu = partNus.findElement(By.tagName("a"));
+
+                WebElement productCosts = webElement.findElement(By.className("product-costs"));
+                WebElement costs = productCosts.findElement(By.className("your-cost"));
+                List<WebElement> cost = costs.findElements(By.tagName("span"));
+
+                WebElement listPrice = productCosts.findElements(By.className("cost-details")).get(1).findElements(By.tagName("span")).get(1);
+
+
+                WebElement image = webElement.findElement(By.className("flex-image"));
+                result.setDateTime(LocalDateTime.now());
+                result.setSiteName(ScraperId.KEYSTONE_AUTOMOTIVE.id);
+                result.setImageUrl(image.findElement(By.tagName("img")).getAttribute("src"));
+                result.setTitle(productName.getText());
+                result.setDescription(productDesc.getText());
+                result.setListPrice(listPrice.getText());
+                result.setYourPrice(cost.get(1).getText());
+                result.setPartNumber(partNu.getText());
             } catch (NoSuchElementException | StaleElementReferenceException e) {
                 logger.error(e.getMessage(), e);
             }

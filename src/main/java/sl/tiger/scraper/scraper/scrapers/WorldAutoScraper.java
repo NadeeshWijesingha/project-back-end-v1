@@ -2,13 +2,11 @@ package sl.tiger.scraper.scraper.scrapers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import sl.tiger.scraper.business.CriteriaRepository;
+import sl.tiger.scraper.business.PartNumberCriteriaRepository;
 import sl.tiger.scraper.business.ResultRepository;
 import sl.tiger.scraper.controller.model.ScraperId;
 import sl.tiger.scraper.controller.model.StatusMassages;
-import sl.tiger.scraper.dto.Availability;
-import sl.tiger.scraper.dto.Criteria;
-import sl.tiger.scraper.dto.LocationAvailability;
-import sl.tiger.scraper.dto.Result;
+import sl.tiger.scraper.dto.*;
 import sl.tiger.scraper.entity.ResultEntity;
 import sl.tiger.scraper.exception.CriteriaException;
 import sl.tiger.scraper.scraper.Scraper;
@@ -36,6 +34,8 @@ public class WorldAutoScraper extends Scraper {
     private ResultRepository resultRepository;
     @Autowired
     private CriteriaRepository criteriaRepository;
+    @Autowired
+    private PartNumberCriteriaRepository partNumberCriteriaRepository;
 
     public static final String USERNAME = "WAW22295";
     public static final String PASSWORD = "MY4UT0P!";
@@ -93,15 +93,16 @@ public class WorldAutoScraper extends Scraper {
     }
 
     @Override
-    public List<Result> searchByPartNumber(String partNumber, boolean isAddToCart, Criteria criteria) throws CriteriaException {
-
+    public List<Result> searchByPartNumber(String site, String partNumber, boolean addToCart,
+                                           String customerName, String customerContact,
+                                           PartNumberCriteria criteria) throws CriteriaException {
         try {
 
             login();
             logger.info(StatusMassages.LOGIN_SUCCESS.status);
 
 
-            findPartNuSearch(partNumber, isAddToCart);
+            findPartNuSearch(partNumber, addToCart);
 
             webDriver.switchTo().defaultContent();
             webDriver.switchTo().frame("fraBody");
@@ -117,14 +118,14 @@ public class WorldAutoScraper extends Scraper {
                 pageReset();
                 throw new CriteriaException(StatusMassages.PART_NOT_AVAILABLE.status);
             } else {
-                setResults(results, criteria);
+                setPartNumberResults(results, criteria);
             }
 
             results = results.stream().filter(result -> partNumber.equalsIgnoreCase(criteria.getPartNumber())).collect(Collectors.toList());
 
             wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("plTable")));
 
-            if (isAddToCart) {
+            if (addToCart) {
                 webDriver.switchTo().defaultContent();
                 webDriver.switchTo().frame("fraBody");
 
@@ -154,10 +155,14 @@ public class WorldAutoScraper extends Scraper {
 
             pageReset();
 
-            criteria.setDate(LocalDateTime.now());
-            criteria.setSiteName(ScraperId.WORLD_AUTO.id);
-
-            criteriaRepository.save(criteria);
+            if (addToCart) {
+                criteria.setSite(ScraperId.ALTROM.id);
+                criteria.setCustomerName(customerName);
+                criteria.setCustomerContactNumber(customerContact);
+                criteria.setPartNumber(partNumber);
+                criteria.setAddToCart(addToCart);
+                partNumberCriteriaRepository.save(criteria);
+            }
             resultRepository.saveAll(results);
 
             return results;
@@ -362,6 +367,50 @@ public class WorldAutoScraper extends Scraper {
         logger.info(StatusMassages.SET_RESULT_SUCCESS.status);
     }
 
+    public void setPartNumberResults(List<Result> results, PartNumberCriteria criteria) {
+
+        if (criteria.getMaxResultCount() != 0) {
+            MAX_RESULT_COUNT = criteria.getMaxResultCount();
+        }
+
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("plTable")));
+        WebElement resultTable = webDriver.findElement(By.id("plTable"));
+
+        List<WebElement> rows = resultTable.findElements(By.tagName("tbody"));
+        rows.remove(0);
+        int count = 1;
+        for (WebElement webElement : rows){
+            if (count > MAX_RESULT_COUNT)
+                break;
+            Result result = new Result();
+            try {
+
+                WebElement mainTr = webElement.findElements(By.tagName("tr")).get(0);
+                List<WebElement> rowsColumns = mainTr.findElements(By.tagName("td"));
+
+                result.setDateTime(LocalDateTime.now());
+                result.setSiteName(ScraperId.WORLD_AUTO.id);
+                result.setPartNumber(rowsColumns.get(3).findElements(By.tagName("span")).get(1).getText());
+                result.setDescription(rowsColumns.get(2).getText());
+                result.setYourPrice(rowsColumns.get(7).getText());
+                result.setListPrice(rowsColumns.get(6).getText());
+                result.setExtend(rowsColumns.get(8).getText());
+                List<WebElement> imgRef = rowsColumns.get(1).findElements(By.tagName("img"));
+                if (!imgRef.isEmpty()) {
+                    result.setImageUrl(imgRef.get(0).getAttribute("src"));
+
+                }
+            } catch (NoSuchElementException | IndexOutOfBoundsException ex) {
+                logger.error("Image is not present in the result.!");
+                logger.error(ex.getMessage());
+            }
+
+            results.add(result);
+            count++;
+        }
+        // webDriver.switchTo().defaultContent();
+        logger.info(StatusMassages.SET_RESULT_SUCCESS.status);
+    }
     public boolean selectDivInContainer(String containerId, String[] value, WebDriver webDriver) {
         WebElement container = webDriver.findElement(By.id(containerId));
         boolean selected = false;

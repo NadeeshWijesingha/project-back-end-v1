@@ -7,13 +7,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import sl.tiger.scraper.business.CriteriaRepository;
+import sl.tiger.scraper.business.PartNumberCriteriaRepository;
 import sl.tiger.scraper.business.ResultRepository;
 import sl.tiger.scraper.controller.model.ScraperId;
 import sl.tiger.scraper.controller.model.StatusMassages;
-import sl.tiger.scraper.dto.Availability;
-import sl.tiger.scraper.dto.Criteria;
-import sl.tiger.scraper.dto.LocationAvailability;
-import sl.tiger.scraper.dto.Result;
+import sl.tiger.scraper.dto.*;
 import sl.tiger.scraper.exception.CriteriaException;
 import sl.tiger.scraper.scraper.Scraper;
 import sl.tiger.scraper.util.ScrapHelper;
@@ -35,6 +33,8 @@ public class MyPlaceForPartsScraper extends Scraper {
     private ResultRepository resultRepository;
     @Autowired
     private CriteriaRepository criteriaRepository;
+    @Autowired
+    private PartNumberCriteriaRepository partNumberCriteriaRepository;
 
     // TODO read from config
     public static final String USERNAME = "vo91972";
@@ -117,22 +117,13 @@ public class MyPlaceForPartsScraper extends Scraper {
 
     }
 
-    private void prepareToSearch() {
-        login();
-        logger.info(StatusMassages.LOGIN_SUCCESS.status);
-        passMiddleScreen();
-        logger.info("middle screen pass success");
-        closeAdIfExist();
-    }
-
     @Override
-    public List<Result> searchByPartNumber(String partNumber, boolean isAddToCart, Criteria criteria) throws CriteriaException {
-
+    public List<Result> searchByPartNumber(String site, String partNumber, boolean addToCart, String customerName, String customerContact, PartNumberCriteria criteria) throws CriteriaException {
         try {
 
             prepareToSearch();
 
-            findPartNuSearch(partNumber, isAddToCart);
+            findPartNuSearch(partNumber, addToCart);
             List<Result> results = new ArrayList<>();
 
             wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("parts_row")));
@@ -146,7 +137,7 @@ public class MyPlaceForPartsScraper extends Scraper {
                 setResults(results);
             }
 
-            if (isAddToCart) {
+            if (addToCart) {
                 webDriver.findElement(By.id("_mpp_parts_display_WAR_mpp_parts_displayportlet_INSTANCE_6Xnw_2_0_addImage")).click();
 
                 webDriver.findElement(By.className("gr_button")).click();
@@ -185,10 +176,15 @@ public class MyPlaceForPartsScraper extends Scraper {
                 resetSearch();
             }
 
-            criteria.setDate(LocalDateTime.now());
-            criteria.setSiteName(ScraperId.MY_PLACE_FOR_PARTS.id);
+            if (addToCart) {
+                criteria.setSite(ScraperId.MY_PLACE_FOR_PARTS.id);
+                criteria.setCustomerName(customerName);
+                criteria.setCustomerContactNumber(customerContact);
+                criteria.setPartNumber(partNumber);
+                criteria.setAddToCart(addToCart);
+                partNumberCriteriaRepository.save(criteria);
+            }
 
-            criteriaRepository.save(criteria);
             resultRepository.saveAll(results);
             return results;
         } catch (Exception ex) {
@@ -207,6 +203,14 @@ public class MyPlaceForPartsScraper extends Scraper {
                 throw new CriteriaException(StatusMassages.SOMETHING_WENT_WRONG.status);
             }
         }
+    }
+
+    private void prepareToSearch() {
+        login();
+        logger.info(StatusMassages.LOGIN_SUCCESS.status);
+        passMiddleScreen();
+        logger.info("middle screen pass success");
+        closeAdIfExist();
     }
 
     public void login() {

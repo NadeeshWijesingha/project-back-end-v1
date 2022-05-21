@@ -2,11 +2,13 @@ package sl.tiger.scraper.scraper.scrapers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import sl.tiger.scraper.business.CriteriaRepository;
+import sl.tiger.scraper.business.PartNumberCriteriaRepository;
 import sl.tiger.scraper.business.ResultRepository;
 import sl.tiger.scraper.controller.model.ScraperId;
 import sl.tiger.scraper.controller.model.StatusMassages;
 import sl.tiger.scraper.dto.Availability;
 import sl.tiger.scraper.dto.Criteria;
+import sl.tiger.scraper.dto.PartNumberCriteria;
 import sl.tiger.scraper.dto.Result;
 import sl.tiger.scraper.exception.CriteriaException;
 import sl.tiger.scraper.scraper.Scraper;
@@ -38,6 +40,8 @@ public class TigerAutoPartsScraper extends Scraper {
     private ResultRepository resultRepository;
     @Autowired
     private CriteriaRepository criteriaRepository;
+    @Autowired
+    private PartNumberCriteriaRepository partNumberCriteriaRepository;
 
     public static final String USERCODE = "892574";
     public static final String PASSWORD = "892574";
@@ -103,12 +107,14 @@ public class TigerAutoPartsScraper extends Scraper {
     }
 
     @Override
-    public List<Result> searchByPartNumber(String partNumber, boolean isAddToCart, Criteria criteria) throws CriteriaException {
+    public List<Result> searchByPartNumber(String site, String partNumber, boolean addToCart,
+                                           String customerName, String customerContact,
+                                           PartNumberCriteria criteria) throws CriteriaException {
         try {
 
             login();
             logger.info(StatusMassages.LOGIN_SUCCESS.status);
-            findPartNuSearch(partNumber, isAddToCart);
+            findPartNuSearch(partNumber, addToCart);
             ArrayList<Result> results = new ArrayList<>();
 
             wait.until(ExpectedConditions.presenceOfNestedElementLocatedBy(By.id("div_products"), By.tagName("div")));
@@ -120,10 +126,10 @@ public class TigerAutoPartsScraper extends Scraper {
                 clearSearchField();
                 throw new CriteriaException(StatusMassages.PART_NOT_AVAILABLE.status);
             } else {
-                setResult(results, criteria);
+                setPartumberResult(results, criteria);
             }
 
-            if (isAddToCart) {
+            if (addToCart) {
                 WebElement element = webDriver.findElement(By.id("res-wrap"));
                 WebElement tr = element.findElements(By.tagName("tr")).get(2);
                 WebElement td = tr.findElements(By.tagName("td")).get(5);
@@ -155,10 +161,15 @@ public class TigerAutoPartsScraper extends Scraper {
 
             webDriver.get(reDirectUrl);
 
-            criteria.setDate(LocalDateTime.now());
-            criteria.setSiteName(ScraperId.TIGER_AUTO_PARTS.id);
+            if (addToCart) {
+                criteria.setSite(ScraperId.TIGER_AUTO_PARTS.id);
+                criteria.setCustomerName(customerName);
+                criteria.setCustomerContactNumber(customerContact);
+                criteria.setPartNumber(partNumber);
+                criteria.setAddToCart(addToCart);
+                partNumberCriteriaRepository.save(criteria);
+            }
 
-            criteriaRepository.save(criteria);
             resultRepository.saveAll(results);
 
             return results;
@@ -343,6 +354,57 @@ public class TigerAutoPartsScraper extends Scraper {
                 if (criteria.isWithAvailability()) {
                     result.setAvailability(getAvailability(webElement));
                 }
+
+            } catch (NoSuchElementException ex) {
+                logger.error(ex.getMessage(), ex);
+            }
+
+            results.add(result);
+            count++;
+        }
+        webDriver.manage().timeouts().implicitlyWait(IMPLICIT_WAIT_TIME, TimeUnit.SECONDS);
+        logger.info(StatusMassages.SET_RESULT_SUCCESS.status);
+    }
+
+    public void setPartumberResult(List<Result> results, PartNumberCriteria criteria) {
+
+        if (criteria.getMaxResultCount() != 0) {
+            MAX_RESULT_COUNT = criteria.getMaxResultCount();
+        }
+
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("product_list_desktop")));
+
+        WebElement resultTable = webDriver.findElement(By.className("product_list_desktop"));
+
+        List<WebElement> resultSet1 = resultTable.findElements(By.className("alt1"));
+        List<WebElement> resultSet2 = resultTable.findElements(By.className("alt2"));
+
+        List<WebElement> combinedList = Stream.of(resultSet1, resultSet2)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
+
+        webDriver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
+
+        int count = 1;
+
+        for (WebElement webElement : combinedList) {
+            if (count > MAX_RESULT_COUNT)
+                break;
+            Result result = new Result();
+            try {
+                List<WebElement> rowsColumns = webElement.findElements(By.tagName("td"));
+
+                if (rowsColumns.get(0).findElements(By.tagName("a")).size() < 1) {
+                    result.setImageUrl("image not available in this product");
+                } else {
+                    result.setImageUrl(rowsColumns.get(0).findElements(By.tagName("a")).get(1).getAttribute("href"));
+                }
+                result.setDateTime(LocalDateTime.now());
+                result.setSiteName(ScraperId.TIGER_AUTO_PARTS.id);
+                result.setPartNumber(rowsColumns.get(1).getText());
+                result.setTitle(rowsColumns.get(2).getText());
+                result.setListPrice(rowsColumns.get(3).getText());
+                result.setYourPrice(rowsColumns.get(4).getText());
 
             } catch (NoSuchElementException ex) {
                 logger.error(ex.getMessage(), ex);
