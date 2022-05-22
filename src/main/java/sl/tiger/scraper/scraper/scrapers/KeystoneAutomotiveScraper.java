@@ -128,7 +128,7 @@ public class KeystoneAutomotiveScraper extends Scraper {
             webDriver.navigate().refresh();
 
             if (addToCart) {
-                criteria.setSite(ScraperId.ALTROM.id);
+                criteria.setSite(ScraperId.KEYSTONE_AUTOMOTIVE.id);
                 criteria.setCustomerName(customerName);
                 criteria.setCustomerContactNumber(customerContact);
                 criteria.setPartNumber(partNumber);

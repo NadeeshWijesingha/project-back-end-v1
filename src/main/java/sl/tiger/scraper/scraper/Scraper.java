@@ -28,7 +28,7 @@ public abstract class Scraper {
     protected static final int MAX_WAIT_TIME = 30;
     protected static final int MAX_SHORT_WAIT_TIME = 2;
     protected static final int IMPLICIT_WAIT_TIME = 20;
-    protected static int MAX_RESULT_COUNT = 5;
+    protected static int MAX_RESULT_COUNT = 10;
 
     protected int RESET_TIME_GAP = 0;
 
